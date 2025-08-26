@@ -40,10 +40,6 @@
 		{
 			"Name": "NinjaInventory",
 			"Enabled": true
-		},
-		{
-			"Name": "NinjaInput",
-			"Enabled": true
 		}
 	]
 }

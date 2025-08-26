@@ -87,11 +87,11 @@ DerivedDataCache/*
 /Platforms
 /Content/Legal
 /Source/LyraEditor
-/Source/LyraGame
+
 /Content/Environments
 /Content/Feedback
 /Content/ContextEffects
-/Config
+
 /Plugins/CommonGame
 /Plugins/CommonLoadingScreen
 /Plugins/CommonUser
