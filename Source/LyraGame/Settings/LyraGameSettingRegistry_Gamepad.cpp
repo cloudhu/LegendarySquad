@@ -37,7 +37,7 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeGamepadSettings(ULyr
 		Hardware->SetDevName(TEXT("HardwareCollection"));
 		Hardware->SetDisplayName(LOCTEXT("HardwareCollection_Name", "Hardware"));
 		Screen->AddSetting(Hardware);
-			
+
 		//----------------------------------------------------------------------------------
 		{
 			UGameSettingValueDiscreteDynamic* Setting = NewObject<UGameSettingValueDiscreteDynamic>();
@@ -46,7 +46,7 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeGamepadSettings(ULyr
 			Setting->SetDescriptionRichText(LOCTEXT("ControllerHardware_Description", "The type of controller you're using."));
 			Setting->SetDynamicGetter(GET_LOCAL_SETTINGS_FUNCTION_PATH(GetControllerPlatform));
 			Setting->SetDynamicSetter(GET_LOCAL_SETTINGS_FUNCTION_PATH(SetControllerPlatform));
-			
+
 			if (UCommonInputPlatformSettings* PlatformInputSettings = UPlatformSettingsManager::Get().GetSettingsForPlatform<UCommonInputPlatformSettings>())
 			{
 				const TArray<TSoftClassPtr<UCommonInputBaseControllerData>>& ControllerDatas = PlatformInputSettings->GetControllerData();
@@ -121,7 +121,7 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeGamepadSettings(ULyr
 		}
 		//----------------------------------------------------------------------------------
 	}
-	
+
 	// Basic - Look Sensitivity
 	////////////////////////////////////////////////////////////////////////////////////
 	{
@@ -143,14 +143,14 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeGamepadSettings(ULyr
 			LOCTEXT("EFortGamepadSensitivity_FastPlusPlus", "9 (Fast++)"),
 			LOCTEXT("EFortGamepadSensitivity_Insane", "10 (Insane)"),
 		};
-		
+
 		//----------------------------------------------------------------------------------
 		{
 			UGameSettingValueDiscreteDynamic_Enum* Setting = NewObject<UGameSettingValueDiscreteDynamic_Enum>();
 			Setting->SetDevName(TEXT("LookSensitivityPreset"));
 			Setting->SetDisplayName(LOCTEXT("LookSensitivityPreset_Name", "Look Sensitivity"));
 			Setting->SetDescriptionRichText(LOCTEXT("LookSensitivityPreset_Description", "How quickly your view rotates."));
-			
+
 			Setting->SetDynamicGetter(GET_SHARED_SETTINGS_FUNCTION_PATH(GetGamepadLookSensitivityPreset));
 			Setting->SetDynamicSetter(GET_SHARED_SETTINGS_FUNCTION_PATH(SetLookSensitivityPreset));
 			Setting->SetDefaultValue(GetDefault<ULyraSettingsShared>()->GetGamepadLookSensitivityPreset());
@@ -159,7 +159,7 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeGamepadSettings(ULyr
 			{
 				Setting->AddEnumOption(static_cast<ELyraGamepadSensitivity>(PresetIndex), EGamepadSensitivityText[PresetIndex]);
 			}
-			
+
 			BasicSensitivity->AddSetting(Setting);
 		}
 		//----------------------------------------------------------------------------------
@@ -168,7 +168,7 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeGamepadSettings(ULyr
 			Setting->SetDevName(TEXT("LookSensitivityPresetAds"));
 			Setting->SetDisplayName(LOCTEXT("LookSensitivityPresetAds_Name", "Aim Sensitivity (ADS)"));
 			Setting->SetDescriptionRichText(LOCTEXT("LookSensitivityPresetAds_Description", "How quickly your view rotates while aiming down sights (ADS)."));
-			
+
 			Setting->SetDynamicGetter(GET_SHARED_SETTINGS_FUNCTION_PATH(GetGamepadTargetingSensitivityPreset));
 			Setting->SetDynamicSetter(GET_SHARED_SETTINGS_FUNCTION_PATH(SetGamepadTargetingSensitivityPreset));
 			Setting->SetDefaultValue(GetDefault<ULyraSettingsShared>()->GetGamepadTargetingSensitivityPreset());
@@ -196,7 +196,8 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeGamepadSettings(ULyr
 			UGameSettingValueScalarDynamic* Setting = NewObject<UGameSettingValueScalarDynamic>();
 			Setting->SetDevName(TEXT("MoveStickDeadZone"));
 			Setting->SetDisplayName(LOCTEXT("MoveStickDeadZone_Name", "Left Stick DeadZone"));
-			Setting->SetDescriptionRichText(LOCTEXT("MoveStickDeadZone_Description", "Increase or decrease the area surrounding the stick that we ignore input from.  Setting this value too low may result in the character continuing to move even after removing your finger from the stick."));
+			Setting->SetDescriptionRichText(LOCTEXT("MoveStickDeadZone_Description",
+			                                        "Increase or decrease the area surrounding the stick that we ignore input from.  Setting this value too low may result in the character continuing to move even after removing your finger from the stick."));
 
 			Setting->SetDynamicGetter(GET_SHARED_SETTINGS_FUNCTION_PATH(GetGamepadMoveStickDeadZone));
 			Setting->SetDynamicSetter(GET_SHARED_SETTINGS_FUNCTION_PATH(SetGamepadMoveStickDeadZone));
@@ -212,7 +213,8 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeGamepadSettings(ULyr
 			UGameSettingValueScalarDynamic* Setting = NewObject<UGameSettingValueScalarDynamic>();
 			Setting->SetDevName(TEXT("LookStickDeadZone"));
 			Setting->SetDisplayName(LOCTEXT("LookStickDeadZone_Name", "Right Stick DeadZone"));
-			Setting->SetDescriptionRichText(LOCTEXT("LookStickDeadZone_Description", "Increase or decrease the area surrounding the stick that we ignore input from.  Setting this value too low may result in the camera continuing to move even after removing your finger from the stick."));
+			Setting->SetDescriptionRichText(LOCTEXT("LookStickDeadZone_Description",
+			                                        "Increase or decrease the area surrounding the stick that we ignore input from.  Setting this value too low may result in the camera continuing to move even after removing your finger from the stick."));
 
 			Setting->SetDynamicGetter(GET_SHARED_SETTINGS_FUNCTION_PATH(GetGamepadLookStickDeadZone));
 			Setting->SetDynamicSetter(GET_SHARED_SETTINGS_FUNCTION_PATH(SetGamepadLookStickDeadZone));
@@ -258,16 +260,17 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeGamepadSettings(ULyr
 			}
 
 			const FString DisplayCatString = DisplayCategory.ToString();
-			//EpicDebug::Print(TEXT("DisplayCatString: ") + DisplayCatString);
+
 			if (UGameSettingCollection** ExistingCategory = CategoryToSettingCollection.Find(DisplayCatString))
 			{
 				return *ExistingCategory;
 			}
 
 			UGameSettingCollection* ConfigSettingCollection = NewObject<UGameSettingCollection>();
+			UE_LOG(LogTemp, Warning, TEXT("DisplayCatString: %s"), *DisplayCatString);
 			ConfigSettingCollection->SetDevName(FName(DisplayCatString));
 			ConfigSettingCollection->SetDisplayName(DisplayCategory);
-			
+
 			CategoryToSettingCollection.Add(DisplayCatString, ConfigSettingCollection);
 			GamepadBinding->AddSetting(ConfigSettingCollection);
 			return ConfigSettingCollection;
@@ -281,29 +284,38 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeGamepadSettings(ULyr
 		FPlayerMappableKeyQueryOptions Options = {};
 		Options.KeyToMatch = EKeys::Gamepad_FaceButton_Bottom;
 		Options.bMatchBasicKeyTypes = true;
-		
+
 		for (const TPair<FString, TObjectPtr<UEnhancedPlayerMappableKeyProfile>>& ProfilePair : UserSettings->GetAllAvailableKeyProfiles())
 		{
 			//const FString& ProfileName = ProfilePair.Key;
 			//EpicDebug::Print(TEXT("ProfileName :") + ProfileName);
 			for (const TObjectPtr<UEnhancedPlayerMappableKeyProfile>& Profile = ProfilePair.Value; const TPair<FName, FKeyMappingRow>& RowPair : Profile->
-				 GetPlayerMappingRows())
+			     GetPlayerMappingRows())
 			{
 				// Create a setting row for anything with valid mappings and that we haven't created yet
 				//EpicDebug::Print(RowPair.Value.HasAnyMappings() ? " RowPair.Value.HasAnyMappings : True" : "RowPair.Value.HasAnyMappings : false");
-				if (RowPair.Value.HasAnyMappings() /* && !CreatedMappingNames.Contains(RowPair.Key)*/)
+				if (RowPair.Value.HasAnyMappings())
 				{
 					const FText& DesiredDisplayCategory = RowPair.Value.Mappings.begin()->GetDisplayCategory();
 
 					if (UGameSettingCollection* Collection = GetOrCreateSettingCollection(DesiredDisplayCategory))
 					{
-						// Create the settings widget and initialize it, adding it to this config's section
-						ULyraSettingKeyboardInput* InputBinding = NewObject<ULyraSettingKeyboardInput>();
+						for (const FPlayerKeyMapping& Mapping : RowPair.Value.Mappings)
+						{
+							// Only add mappings that pass the query filters that have been provided upon creation
+							if (!Profile->DoesMappingPassQueryOptions(Mapping, Options) || !Mapping.IsValid() || Mapping.GetMappingName().IsNone() ||
+								CreatedMappingNames.Contains(Mapping.GetMappingName()))
+							{
+								continue;
+							}
+							// Create the settings widget and initialize it, adding it to this config's section
+							ULyraSettingKeyboardInput* InputBinding = NewObject<ULyraSettingKeyboardInput>();
 
-						InputBinding->InitializeInputData(Profile, RowPair.Value, Options);
-						
-						Collection->AddSetting(InputBinding);
-						CreatedMappingNames.Add(RowPair.Key);
+							InputBinding->InitializeInputData(Profile, Mapping, Options);
+
+							Collection->AddSetting(InputBinding);
+							CreatedMappingNames.Add(Mapping.GetMappingName());
+						}
 					}
 					else
 					{
@@ -313,7 +325,7 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeGamepadSettings(ULyr
 			}
 		}
 	}
-	
+
 	return Screen;
 }
 

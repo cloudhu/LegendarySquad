@@ -32,15 +32,15 @@ protected:
 	virtual void NativeOnEntryReleased() override;
 	virtual void OnSettingChanged() override;
 
-	void HandleRemapKeyClicked(int32 SlotID);
+	void HandleRemapKeyClicked(uint8 SlotID);
 	void HandleClearClicked() const;
 	void HandleResetToDefaultClicked() const;
 
-	void HandleRemapKeySelected(FKey InKey, int32 SlotID, UGameSettingPressAnyKey* PressAnyKeyPanel);
+	void HandleRemapKeySelected(FKey InKey, uint8 SlotID, UGameSettingPressAnyKey* PressAnyKeyPanel);
 
-	void HandleDuplicateKeySelected(FKey InKey, int32 SlotID, UKeyAlreadyBoundWarning* DuplicateKeyPressAnyKeyPanel) const;
+	void HandleDuplicateKeySelected(FKey InKey, uint8 SlotID, UKeyAlreadyBoundWarning* DuplicateKeyPressAnyKeyPanel) const;
 	
-	void ChangeBinding(int32 InBindSlot, const FKey& InKey);
+	void ChangeBinding(uint8 InBindSlot, const FKey& InKey);
 	
 	void HandleKeySelectionCanceled(UGameSettingPressAnyKey* PressAnyKeyPanel) const;
 	void HandleKeySelectionCanceled(UKeyAlreadyBoundWarning* PressAnyKeyPanel) const;

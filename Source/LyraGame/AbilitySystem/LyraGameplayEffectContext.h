@@ -3,6 +3,8 @@
 #pragma once
 #include "GameplayEffectTypes.h"
 
+#include "AbilitySystem/Types/FNinjaCombatGameplayEffectContext.h"
+
 
 #include "LyraGameplayEffectContext.generated.h"
 
@@ -13,21 +15,21 @@ class UObject;
 class UPhysicalMaterial;
 
 USTRUCT()
-struct FLyraGameplayEffectContext : public FGameplayEffectContext
+struct FLyraGameplayEffectContext : public FNinjaCombatGameplayEffectContext
 {
 	GENERATED_BODY()
 
-	FLyraGameplayEffectContext()
+	FLyraGameplayEffectContext():FNinjaCombatGameplayEffectContext()
 	{
 	}
 
 	FLyraGameplayEffectContext(AActor* InInstigator, AActor* InEffectCauser)
-		: FGameplayEffectContext(InInstigator, InEffectCauser)
+		: FNinjaCombatGameplayEffectContext(InInstigator, InEffectCauser)
 	{
 	}
 
 	/** Returns the wrapped FLyraGameplayEffectContext from the handle, or nullptr if it doesn't exist or is the wrong type */
-	static LYRAGAME_API FLyraGameplayEffectContext* ExtractEffectContext(struct FGameplayEffectContextHandle Handle);
+	static LYRAGAME_API FLyraGameplayEffectContext* ExtractEffectContext(FGameplayEffectContextHandle Handle);
 
 	/** Sets the object used as the ability source */
 	void SetAbilitySource(const ILyraAbilitySourceInterface* InObject, float InSourceLevel);
@@ -37,19 +39,12 @@ struct FLyraGameplayEffectContext : public FGameplayEffectContext
 
 	virtual FGameplayEffectContext* Duplicate() const override
 	{
-		FLyraGameplayEffectContext* NewContext = new FLyraGameplayEffectContext();
-		*NewContext = *this;
-		if (GetHitResult())
-		{
-			// Does a deep copy of the hit result
-			NewContext->AddHitResult(*GetHitResult(), true);
-		}
-		return NewContext;
+		return Super::Duplicate();
 	}
 
 	virtual UScriptStruct* GetScriptStruct() const override
 	{
-		return FLyraGameplayEffectContext::StaticStruct();
+		return Super::StaticStruct();
 	}
 
 	/** Overridden to serialize new fields */

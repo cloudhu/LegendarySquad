@@ -29,7 +29,10 @@ void ULyraSettingsListEntrySetting_KeyboardInput::SetSetting(UGameSetting* InSet
 void ULyraSettingsListEntrySetting_KeyboardInput::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
-
+	Button_PrimaryKey->OnKeyRemapClicked.AddUObject(this, &ThisClass::HandleRemapKeyClicked);
+	Button_SecondaryKey->OnKeyRemapClicked.AddUObject(this, &ThisClass::HandleRemapKeyClicked);
+	Button_ThirdKey->OnKeyRemapClicked.AddUObject(this, &ThisClass::HandleRemapKeyClicked);
+	Button_FourthKey->OnKeyRemapClicked.AddUObject(this, &ThisClass::HandleRemapKeyClicked);
 	ButtonArray.Add(Button_PrimaryKey);
 	ButtonArray.Add(Button_SecondaryKey);
 	ButtonArray.Add(Button_ThirdKey);
@@ -38,11 +41,11 @@ void ULyraSettingsListEntrySetting_KeyboardInput::NativeOnInitialized()
 	Button_ResetToDefault->OnClicked().AddUObject(this, &ThisClass::HandleResetToDefaultClicked);
 }
 
-void ULyraSettingsListEntrySetting_KeyboardInput::ChangeBinding(const int32 InBindSlot, const FKey& InKey)
+void ULyraSettingsListEntrySetting_KeyboardInput::ChangeBinding(const uint8 InBindSlot, const FKey& InKey)
 {
 	OriginalKeyToBind = InKey;
 	TArray<FName> ActionsForKey;
-	KeyboardInputSetting->GetAllMappedActionsFromKey(InBindSlot, InKey, ActionsForKey);
+	KeyboardInputSetting->GetAllMappedActionsFromKey(InKey, ActionsForKey);
 	if (!ActionsForKey.IsEmpty())
 	{
 		UKeyAlreadyBoundWarning* KeyAlreadyBoundWarning = CastChecked<UKeyAlreadyBoundWarning>(
@@ -94,13 +97,13 @@ void ULyraSettingsListEntrySetting_KeyboardInput::HandleResetToDefaultClicked() 
 	KeyboardInputSetting->ResetToDefault();
 }
 
-void ULyraSettingsListEntrySetting_KeyboardInput::HandleRemapKeySelected(FKey InKey, int32 SlotID, UGameSettingPressAnyKey* PressAnyKeyPanel)
+void ULyraSettingsListEntrySetting_KeyboardInput::HandleRemapKeySelected(FKey InKey, uint8 SlotID, UGameSettingPressAnyKey* PressAnyKeyPanel)
 {
 	PressAnyKeyPanel->OnKeySelected.RemoveAll(this);
 	ChangeBinding(SlotID, InKey);
 }
 
-void ULyraSettingsListEntrySetting_KeyboardInput::HandleDuplicateKeySelected(FKey InKey, int32 SlotID,
+void ULyraSettingsListEntrySetting_KeyboardInput::HandleDuplicateKeySelected(FKey InKey, uint8 SlotID,
                                                                              UKeyAlreadyBoundWarning* DuplicateKeyPressAnyKeyPanel) const
 {
 	DuplicateKeyPressAnyKeyPanel->OnKeySelected.RemoveAll(this);
@@ -112,7 +115,7 @@ void ULyraSettingsListEntrySetting_KeyboardInput::OnSettingChanged()
 	Refresh();
 }
 
-void ULyraSettingsListEntrySetting_KeyboardInput::HandleRemapKeyClicked(int32 SlotID)
+void ULyraSettingsListEntrySetting_KeyboardInput::HandleRemapKeyClicked(uint8 SlotID)
 {
 	UGameSettingPressAnyKey* PressAnyKeyPanel = CastChecked<UGameSettingPressAnyKey>(
 		UCommonUIExtensions::PushContentToLayer_ForPlayer(GetOwningLocalPlayer(), PressAnyKeyLayer, PressAnyKeyPanelClass));
@@ -125,11 +128,14 @@ void ULyraSettingsListEntrySetting_KeyboardInput::Refresh() const
 {
 	if (ensure(KeyboardInputSetting))
 	{
-		Button_SecondaryKey->SetVisibility(ESlateVisibility::Hidden);
-		Button_ThirdKey->SetVisibility(ESlateVisibility::Hidden);
-		Button_FourthKey->SetVisibility(ESlateVisibility::Hidden);
+		const FText NotBound = LOCTEXT("NotBound", "Not Bound");
+		Button_PrimaryKey->SetButtonText(NotBound);
+		Button_SecondaryKey->SetButtonText(NotBound);
+		Button_ThirdKey->SetVisibility(ESlateVisibility::Collapsed);
+		Button_FourthKey->SetVisibility(ESlateVisibility::Collapsed);
 		int Index = 0;
 		FSlateBrush FoundBrush;
+		int PrevIndex = 0;
 		for (TPair Pair : KeyboardInputSetting->GetKeyMappings())
 		{
 			if (Pair.Value.IsValid())
@@ -142,12 +148,13 @@ void ULyraSettingsListEntrySetting_KeyboardInput::Refresh() const
 				{
 					ButtonArray[Index]->SetButtonText(Key.GetDisplayName());
 				}
-				ButtonArray[Index]->SetKeyIndex(static_cast<int32>(Pair.Key));
+				PrevIndex = static_cast<int32>(Pair.Key);
+				ButtonArray[Index]->SetKeyIndex(PrevIndex);
 				ButtonArray[Index]->SetVisibility(ESlateVisibility::Visible);
 			}
 			else
 			{
-				ButtonArray[Index]->SetVisibility(ESlateVisibility::Hidden);
+				ButtonArray[Index]->SetVisibility(ESlateVisibility::Collapsed);
 			}
 			Index++;
 			if (Index > ButtonArray.Num() - 1)
@@ -155,7 +162,11 @@ void ULyraSettingsListEntrySetting_KeyboardInput::Refresh() const
 				Index = 0;
 			}
 		}
-
+		// if this Index is 1,Button_SecondaryKey is not bound
+		if (Index == 1)
+		{
+			Button_SecondaryKey->SetKeyIndex(PrevIndex + 2);
+		}
 		// Only display the reset to default button if a mapping is customized
 		if (ensure(Button_ResetToDefault))
 		{

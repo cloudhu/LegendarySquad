@@ -22,11 +22,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateIconStyle();
 
-	DECLARE_EVENT_OneParam(UWidget_KeyRemapButtonBase, FOnKeyRemapClicked, int32);
+	DECLARE_EVENT_OneParam(UWidget_KeyRemapButtonBase, FOnKeyRemapClicked, uint8);
 
 	FOnKeyRemapClicked OnKeyRemapClicked;
 
-	void SetKeyIndex(int32 Index);
+	void SetKeyIndex(const uint8 Index);
 
 protected:
 
@@ -35,7 +35,7 @@ protected:
 	virtual void NativeDestruct() override;
 
 private:
-	int32 KeyIndex = 0;
+	uint8 KeyIndex = 0;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
 	TObjectPtr<UCommonLazyImage> CommonLazyImage_Icon;

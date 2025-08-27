@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "EnhancedActionKeyMapping.h"
 #include "GameSettingValue.h"
 #include "UserSettings/EnhancedInputUserSettings.h"
 
@@ -23,8 +22,8 @@ class ULyraSettingKeyboardInput : public UGameSettingValue
 public:
 	ULyraSettingKeyboardInput();
 
-	void InitializeInputData(const UEnhancedPlayerMappableKeyProfile* KeyProfile, const FKeyMappingRow& MappingData,
-	                         const FPlayerMappableKeyQueryOptions& QueryOptions);
+	void InitializeInputData(const UEnhancedPlayerMappableKeyProfile* KeyProfile, const FPlayerKeyMapping& Mapping ,
+	                         const FPlayerMappableKeyQueryOptions& InQueryOptions);
 
 	FText GetKeyTextFromSlot(const EPlayerMappableKeySlot InSlot) const;
 
@@ -32,8 +31,8 @@ public:
 	virtual void ResetToDefault() override;
 	virtual void RestoreToInitial() override;
 
-	bool ChangeBinding(int32 InKeyBindSlot, FKey NewKey);
-	void GetAllMappedActionsFromKey(int32 InKeyBindSlot, FKey Key, TArray<FName>& OutActionNames) const;
+	bool ChangeBinding(uint8 InKeyBindSlot, const FKey& NewKey);
+	void GetAllMappedActionsFromKey(FKey Key, TArray<FName>& OutActionNames) const;
 
 	/** Returns true if mappings on this setting have been customized */
 	bool IsMappingCustomized() const;

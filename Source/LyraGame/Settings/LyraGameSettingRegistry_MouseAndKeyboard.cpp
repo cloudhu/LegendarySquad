@@ -45,7 +45,8 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeMouseAndKeyboardSett
 			UGameSettingValueScalarDynamic* Setting = NewObject<UGameSettingValueScalarDynamic>();
 			Setting->SetDevName(TEXT("MouseSensitivityYaw"));
 			Setting->SetDisplayName(LOCTEXT("MouseSensitivityYaw_Name", "X-Axis Sensitivity"));
-			Setting->SetDescriptionRichText(LOCTEXT("MouseSensitivityYaw_Description", "Sets the sensitivity of the mouse's horizontal (x) axis. With higher settings the camera will move faster when looking left and right with the mouse."));
+			Setting->SetDescriptionRichText(LOCTEXT("MouseSensitivityYaw_Description",
+			                                        "Sets the sensitivity of the mouse's horizontal (x) axis. With higher settings the camera will move faster when looking left and right with the mouse."));
 
 			Setting->SetDynamicGetter(GET_SHARED_SETTINGS_FUNCTION_PATH(GetMouseSensitivityX));
 			Setting->SetDynamicSetter(GET_SHARED_SETTINGS_FUNCTION_PATH(SetMouseSensitivityX));
@@ -63,7 +64,8 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeMouseAndKeyboardSett
 			UGameSettingValueScalarDynamic* Setting = NewObject<UGameSettingValueScalarDynamic>();
 			Setting->SetDevName(TEXT("MouseSensitivityPitch"));
 			Setting->SetDisplayName(LOCTEXT("MouseSensitivityPitch_Name", "Y-Axis Sensitivity"));
-			Setting->SetDescriptionRichText(LOCTEXT("MouseSensitivityPitch_Description", "Sets the sensitivity of the mouse's vertical (y) axis. With higher settings the camera will move faster when looking up and down with the mouse."));
+			Setting->SetDescriptionRichText(LOCTEXT("MouseSensitivityPitch_Description",
+			                                        "Sets the sensitivity of the mouse's vertical (y) axis. With higher settings the camera will move faster when looking up and down with the mouse."));
 
 			Setting->SetDynamicGetter(GET_SHARED_SETTINGS_FUNCTION_PATH(GetMouseSensitivityY));
 			Setting->SetDynamicSetter(GET_SHARED_SETTINGS_FUNCTION_PATH(SetMouseSensitivityY));
@@ -81,7 +83,8 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeMouseAndKeyboardSett
 			UGameSettingValueScalarDynamic* Setting = NewObject<UGameSettingValueScalarDynamic>();
 			Setting->SetDevName(TEXT("MouseTargetingMultiplier"));
 			Setting->SetDisplayName(LOCTEXT("MouseTargetingMultiplier_Name", "Targeting Sensitivity"));
-			Setting->SetDescriptionRichText(LOCTEXT("MouseTargetingMultiplier_Description", "Sets the modifier for reducing mouse sensitivity when targeting. 100% will have no slow down when targeting. Lower settings will have more slow down when targeting."));
+			Setting->SetDescriptionRichText(LOCTEXT("MouseTargetingMultiplier_Description",
+			                                        "Sets the modifier for reducing mouse sensitivity when targeting. 100% will have no slow down when targeting. Lower settings will have more slow down when targeting."));
 
 			Setting->SetDynamicGetter(GET_SHARED_SETTINGS_FUNCTION_PATH(GetTargetingMultiplier));
 			Setting->SetDynamicSetter(GET_SHARED_SETTINGS_FUNCTION_PATH(SetTargetingMultiplier));
@@ -147,7 +150,7 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeMouseAndKeyboardSett
 		// If there isn't one, then it will create a new one and initialize it
 		auto GetOrCreateSettingCollection = [&CategoryToSettingCollection, &KeyBinding](FText DisplayCategory) -> UGameSettingCollection*
 		{
-			static const FString DefaultDevName = TEXT("Default_KBM");
+			//static const FString DefaultDevName = TEXT("Default_KBM");
 			static const FText DefaultDevDisplayName = NSLOCTEXT("LyraInputSettings", "LyraInputDefaults", "Default Experiences");
 
 			if (DisplayCategory.IsEmpty())
@@ -156,18 +159,18 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeMouseAndKeyboardSett
 			}
 
 			const FString DisplayCatString = DisplayCategory.ToString();
-			
+
 			if (UGameSettingCollection** ExistingCategory = CategoryToSettingCollection.Find(DisplayCatString))
 			{
 				return *ExistingCategory;
 			}
-			
+
 			UGameSettingCollection* ConfigSettingCollection = NewObject<UGameSettingCollection>();
 			ConfigSettingCollection->SetDevName(FName(DisplayCatString));
 			ConfigSettingCollection->SetDisplayName(DisplayCategory);
 			KeyBinding->AddSetting(ConfigSettingCollection);
 			CategoryToSettingCollection.Add(DisplayCatString, ConfigSettingCollection);
-			
+
 			return ConfigSettingCollection;
 		};
 
@@ -180,23 +183,33 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeMouseAndKeyboardSett
 		Options.bMatchBasicKeyTypes = true;
 		for (const TPair<FString, TObjectPtr<UEnhancedPlayerMappableKeyProfile>>& ProfilePair : UserSettings->GetAllAvailableKeyProfiles())
 		{
-			for (const TObjectPtr<UEnhancedPlayerMappableKeyProfile>& Profile = ProfilePair.Value; const TPair<FName, FKeyMappingRow>& RowPair : Profile->GetPlayerMappingRows())
+			for (const TObjectPtr<UEnhancedPlayerMappableKeyProfile>& Profile = ProfilePair.Value; const TPair<FName, FKeyMappingRow>& RowPair : Profile->
+			     GetPlayerMappingRows())
 			{
 				// Create a setting row for anything with valid mappings and that we haven't created yet
-				if (RowPair.Value.HasAnyMappings() /* && !CreatedMappingNames.Contains(RowPair.Key)*/)
+				if (RowPair.Value.HasAnyMappings())
 				{
 					const FText& DesiredDisplayCategory = RowPair.Value.Mappings.begin()->GetDisplayCategory();
-					
+
 					if (UGameSettingCollection* Collection = GetOrCreateSettingCollection(DesiredDisplayCategory))
 					{
-						// Create the settings widget and initialize it, adding it to this config's section
-						ULyraSettingKeyboardInput* InputBinding = NewObject<ULyraSettingKeyboardInput>();
+						for (const FPlayerKeyMapping& Mapping : RowPair.Value.Mappings)
+						{
+							// Only add mappings that pass the query filters that have been provided upon creation
+							if (!Profile->DoesMappingPassQueryOptions(Mapping, Options) || !Mapping.IsValid() || Mapping.GetMappingName().IsNone() ||
+								CreatedMappingNames.Contains(Mapping.GetMappingName()))
+							{
+								continue;
+							}
+							// Create the settings widget and initialize it, adding it to this config's section
+							ULyraSettingKeyboardInput* InputBinding = NewObject<ULyraSettingKeyboardInput>();
 
-						InputBinding->InitializeInputData(Profile, RowPair.Value, Options);
-						InputBinding->AddEditCondition(WhenPlatformSupportsMouseAndKeyboard);
+							InputBinding->InitializeInputData(Profile, Mapping, Options);
+							InputBinding->AddEditCondition(WhenPlatformSupportsMouseAndKeyboard);
 
-						Collection->AddSetting(InputBinding);
-						CreatedMappingNames.Add(RowPair.Key);
+							Collection->AddSetting(InputBinding);
+							CreatedMappingNames.Add(Mapping.GetMappingName());
+						}
 					}
 					else
 					{

@@ -14,7 +14,7 @@ void UKeyRemapButtonBase::SetButtonDisplayImage(const FSlateBrush& InBrush)
 	}
 }
 
-void UKeyRemapButtonBase::SetKeyIndex(const int32 Index)
+void UKeyRemapButtonBase::SetKeyIndex(const uint8 Index)
 {
 	KeyIndex = Index;
 }

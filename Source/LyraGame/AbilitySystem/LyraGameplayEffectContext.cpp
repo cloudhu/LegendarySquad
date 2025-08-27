@@ -17,10 +17,9 @@ class FArchive;
 
 FLyraGameplayEffectContext* FLyraGameplayEffectContext::ExtractEffectContext(struct FGameplayEffectContextHandle Handle)
 {
-	FGameplayEffectContext* BaseEffectContext = Handle.Get();
-	if ((BaseEffectContext != nullptr) && BaseEffectContext->GetScriptStruct()->IsChildOf(FLyraGameplayEffectContext::StaticStruct()))
+	if (FGameplayEffectContext* BaseEffectContext = Handle.Get(); (BaseEffectContext != nullptr) && BaseEffectContext->GetScriptStruct()->IsChildOf(StaticStruct()))
 	{
-		return (FLyraGameplayEffectContext*)BaseEffectContext;
+		return static_cast<FLyraGameplayEffectContext*>(BaseEffectContext);
 	}
 
 	return nullptr;
@@ -28,12 +27,10 @@ FLyraGameplayEffectContext* FLyraGameplayEffectContext::ExtractEffectContext(str
 
 bool FLyraGameplayEffectContext::NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess)
 {
-	FGameplayEffectContext::NetSerialize(Ar, Map, bOutSuccess);
+	return Super::NetSerialize(Ar, Map, bOutSuccess);
 
 	// Not serialized for post-activation use:
 	// CartridgeID
-
-	return true;
 }
 
 #if UE_WITH_IRIS
