@@ -11,11 +11,16 @@
 #include "LyraCharacterMovementComponent.h"
 #include "LyraGameplayTags.h"
 #include "LyraLogChannels.h"
+#include "NinjaCombatTags.h"
+
 #include "Net/UnrealNetwork.h"
 #include "Player/LyraPlayerController.h"
 #include "Player/LyraPlayerState.h"
 #include "System/LyraSignificanceManager.h"
 #include "TimerManager.h"
+
+#include "Components/ArrowComponent.h"
+#include "Components/NinjaCombatManagerComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraCharacter)
 
@@ -28,7 +33,7 @@ static FName NAME_LyraCharacterCollisionProfile_Capsule(TEXT("LyraPawnCapsule"))
 static FName NAME_LyraCharacterCollisionProfile_Mesh(TEXT("LyraPawnMesh"));
 
 ALyraCharacter::ALyraCharacter(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer.SetDefaultSubobjectClass<ULyraCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<ULyraCharacterMovementComponent>(CharacterMovementComponentName))
 {
 	// Avoid ticking characters if possible.
 	PrimaryActorTick.bCanEverTick = false;
@@ -43,7 +48,7 @@ ALyraCharacter::ALyraCharacter(const FObjectInitializer& ObjectInitializer)
 
 	USkeletalMeshComponent* MeshComp = GetMesh();
 	check(MeshComp);
-	MeshComp->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));  // Rotate mesh to be X forward since it is exported as Y forward.
+	MeshComp->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f)); // Rotate mesh to be X forward since it is exported as Y forward.
 	MeshComp->SetCollisionProfileName(NAME_LyraCharacterCollisionProfile_Mesh);
 
 	ULyraCharacterMovementComponent* LyraMoveComp = CastChecked<ULyraCharacterMovementComponent>(GetCharacterMovement());
@@ -62,7 +67,8 @@ ALyraCharacter::ALyraCharacter(const FObjectInitializer& ObjectInitializer)
 	LyraMoveComp->SetCrouchedHalfHeight(65.0f);
 
 	PawnExtComponent = CreateDefaultSubobject<ULyraPawnExtensionComponent>(TEXT("PawnExtensionComponent"));
-	PawnExtComponent->OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemInitialized));
+	PawnExtComponent->OnAbilitySystemInitialized_RegisterAndCall(
+		FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemInitialized));
 	PawnExtComponent->OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemUninitialized));
 
 	HealthComponent = CreateDefaultSubobject<ULyraHealthComponent>(TEXT("HealthComponent"));
@@ -78,6 +84,15 @@ ALyraCharacter::ALyraCharacter(const FObjectInitializer& ObjectInitializer)
 
 	BaseEyeHeight = 80.0f;
 	CrouchedEyeHeight = 50.0f;
+	CombatManager = CreateDefaultSubobject<UNinjaCombatManagerComponent>("CombatManager");
+
+	ForwardReference = CreateDefaultSubobject<UArrowComponent>("ForwardReference");
+	ForwardReference->ComponentTags.Add(Tag_Combat_Component_ForwardReference.GetTag().GetTagName());
+	ForwardReference->SetVisibleFlag(false);
+	ForwardReference->SetUsingAbsoluteRotation(true);
+	ForwardReference->SetWorldRotation(FRotator::ZeroRotator);
+	ForwardReference->SetArrowColor(FLinearColor::Green);
+	ForwardReference->SetupAttachment(GetRootComponent());
 }
 
 void ALyraCharacter::PreInitializeComponents()
@@ -96,7 +111,7 @@ void ALyraCharacter::BeginPlay()
 	{
 		if (ULyraSignificanceManager* SignificanceManager = USignificanceManager::Get<ULyraSignificanceManager>(World))
 		{
-//@TODO: SignificanceManager->RegisterObject(this, (EFortSignificanceType)SignificanceType);
+			//@TODO: SignificanceManager->RegisterObject(this, (EFortSignificanceType)SignificanceType);
 		}
 	}
 }
@@ -126,7 +141,7 @@ void ALyraCharacter::Reset()
 	UninitAndDestroy();
 }
 
-void ALyraCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+void ALyraCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
@@ -146,9 +161,9 @@ void ALyraCharacter::PreReplication(IRepChangedPropertyTracker& ChangedPropertyT
 		double AccelXYRadians, AccelXYMagnitude;
 		FMath::CartesianToPolar(CurrentAccel.X, CurrentAccel.Y, AccelXYMagnitude, AccelXYRadians);
 
-		ReplicatedAcceleration.AccelXYRadians   = FMath::FloorToInt((AccelXYRadians / TWO_PI) * 255.0);     // [0, 2PI] -> [0, 255]
-		ReplicatedAcceleration.AccelXYMagnitude = FMath::FloorToInt((AccelXYMagnitude / MaxAccel) * 255.0);	// [0, MaxAccel] -> [0, 255]
-		ReplicatedAcceleration.AccelZ           = FMath::FloorToInt((CurrentAccel.Z / MaxAccel) * 127.0);   // [-MaxAccel, MaxAccel] -> [-127, 127]
+		ReplicatedAcceleration.AccelXYRadians = FMath::FloorToInt((AccelXYRadians / TWO_PI) * 255.0); // [0, 2PI] -> [0, 255]
+		ReplicatedAcceleration.AccelXYMagnitude = FMath::FloorToInt((AccelXYMagnitude / MaxAccel) * 255.0); // [0, MaxAccel] -> [0, 255]
+		ReplicatedAcceleration.AccelZ = FMath::FloorToInt((CurrentAccel.Z / MaxAccel) * 127.0); // [-MaxAccel, MaxAccel] -> [-127, 127]
 	}
 }
 
@@ -188,7 +203,7 @@ UAbilitySystemComponent* ALyraCharacter::GetAbilitySystemComponent() const
 {
 	if (PawnExtComponent == nullptr)
 	{
-		return nullptr;
+		return Super::GetAbilitySystemComponent();
 	}
 
 	return PawnExtComponent->GetLyraAbilitySystemComponent();
@@ -469,9 +484,9 @@ void ALyraCharacter::OnRep_ReplicatedAcceleration()
 	if (ULyraCharacterMovementComponent* LyraMovementComponent = Cast<ULyraCharacterMovementComponent>(GetCharacterMovement()))
 	{
 		// Decompress Acceleration
-		const double MaxAccel         = LyraMovementComponent->MaxAcceleration;
+		const double MaxAccel = LyraMovementComponent->MaxAcceleration;
 		const double AccelXYMagnitude = double(ReplicatedAcceleration.AccelXYMagnitude) * MaxAccel / 255.0; // [0, 255] -> [0, MaxAccel]
-		const double AccelXYRadians   = double(ReplicatedAcceleration.AccelXYRadians) * TWO_PI / 255.0;     // [0, 255] -> [0, 2PI]
+		const double AccelXYRadians = double(ReplicatedAcceleration.AccelXYRadians) * TWO_PI / 255.0; // [0, 255] -> [0, 2PI]
 
 		FVector UnpackedAcceleration(FVector::ZeroVector);
 		FMath::PolarToCartesian(AccelXYMagnitude, AccelXYRadians, UnpackedAcceleration.X, UnpackedAcceleration.Y);
@@ -498,7 +513,8 @@ void ALyraCharacter::SetGenericTeamId(const FGenericTeamId& NewTeamID)
 	}
 	else
 	{
-		UE_LOG(LogLyraTeams, Error, TEXT("You can't set the team ID on a possessed character (%s); it's driven by the associated controller"), *GetPathNameSafe(this));
+		UE_LOG(LogLyraTeams, Error, TEXT("You can't set the team ID on a possessed character (%s); it's driven by the associated controller"),
+		       *GetPathNameSafe(this));
 	}
 }
 
@@ -548,6 +564,26 @@ bool ALyraCharacter::UpdateSharedReplication()
 
 	// We cannot fastrep right now. Don't send anything.
 	return false;
+}
+
+UNinjaCombatManagerComponent* ALyraCharacter::GetCombatManager_Implementation() const
+{
+	return CombatManager;
+}
+
+USceneComponent* ALyraCharacter::GetCombatForwardReference_Implementation() const
+{
+	return ForwardReference;
+}
+
+USkeletalMeshComponent* ALyraCharacter::GetCombatMesh_Implementation() const
+{
+	return GetMesh();
+}
+
+UAnimInstance* ALyraCharacter::GetCombatAnimInstance_Implementation() const
+{
+	return GetMesh()->GetAnimInstance();
 }
 
 void ALyraCharacter::FastSharedReplication_Implementation(const FSharedRepMovement& SharedRepMovement)

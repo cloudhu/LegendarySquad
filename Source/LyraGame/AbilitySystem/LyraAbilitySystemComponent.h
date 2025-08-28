@@ -3,8 +3,9 @@
 #pragma once
 
 #include "Abilities/LyraGameplayAbility.h"
-#include "AbilitySystemComponent.h"
 #include "NativeGameplayTags.h"
+
+#include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 
 #include "LyraAbilitySystemComponent.generated.h"
 
@@ -25,7 +26,7 @@ LYRAGAME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Gameplay_AbilityInputBlocked);
  *	Base ability system component class used by this project.
  */
 UCLASS(MinimalAPI)
-class ULyraAbilitySystemComponent : public UAbilitySystemComponent
+class ULyraAbilitySystemComponent : public UNinjaGASAbilitySystemComponent
 {
 	GENERATED_BODY()
 
@@ -104,7 +105,7 @@ protected:
 	TArray<FGameplayAbilitySpecHandle> InputHeldSpecHandles;
 
 	// Number of abilities running in each activation group.
-	int32 ActivationGroupCounts[(uint8)ELyraAbilityActivationGroup::MAX];
+	int32 ActivationGroupCounts[static_cast<uint8>(ELyraAbilityActivationGroup::MAX)];
 };
 
 #undef UE_API

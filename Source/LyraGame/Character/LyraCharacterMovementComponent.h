@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include "GameFramework/CharacterMovementComponent.h"
 #include "NativeGameplayTags.h"
+
+#include "Components/NinjaCombatCharacterMovementComponent.h"
 
 #include "LyraCharacterMovementComponent.generated.h"
 
@@ -45,7 +46,7 @@ struct FLyraCharacterGroundInfo
  *	The base character movement component class used by this project.
  */
 UCLASS(MinimalAPI, Config = Game)
-class ULyraCharacterMovementComponent : public UCharacterMovementComponent
+class ULyraCharacterMovementComponent : public UNinjaCombatCharacterMovementComponent
 {
 	GENERATED_BODY()
 

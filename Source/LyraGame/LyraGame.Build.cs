@@ -45,6 +45,7 @@ public class LyraGame : ModuleRules
 				"PropertyPath",
 				"NinjaCombat",
 				"NetCore",
+				"NinjaGAS",
 			}
 		);
 
@@ -76,7 +77,8 @@ public class LyraGame : ModuleRules
 				"ClientPilot",
 				"EngineSettings",
 				"DTLSHandlerComponent",
-				"Json",
+				"Json", 
+				"NinjaGAS",
 			}
 		);
 

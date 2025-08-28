@@ -5,13 +5,18 @@
 #include "AbilitySystemInterface.h"
 #include "GameplayCueInterface.h"
 #include "GameplayTagAssetInterface.h"
-#include "ModularCharacter.h"
+
+#include "GameFramework/NinjaGASCharacter.h"
+
+#include "Interfaces/CombatSystemInterface.h"
+
 #include "Teams/LyraTeamAgentInterface.h"
 
 #include "LyraCharacter.generated.h"
 
 #define UE_API LYRAGAME_API
 
+class UNinjaCombatManagerComponent;
 class AActor;
 class AController;
 class ALyraPlayerController;
@@ -95,7 +100,7 @@ struct TStructOpsTypeTraits<FSharedRepMovement> : public TStructOpsTypeTraitsBas
  *	New behavior should be added via pawn components when possible.
  */
 UCLASS(MinimalAPI, Config = Game, Meta = (ShortTooltip = "The base character pawn class used by this project."))
-class ALyraCharacter : public AModularCharacter, public IAbilitySystemInterface, public IGameplayCueInterface, public IGameplayTagAssetInterface, public ILyraTeamAgentInterface
+class ALyraCharacter : public ANinjaGASCharacter, public IGameplayCueInterface, public ILyraTeamAgentInterface, public ICombatSystemInterface
 {
 	GENERATED_BODY()
 
@@ -147,6 +152,13 @@ public:
 	FSharedRepMovement LastSharedReplication;
 
 	UE_API virtual bool UpdateSharedReplication();
+
+	// -- Begin CombatSystem implementation
+	UE_API virtual UNinjaCombatManagerComponent* GetCombatManager_Implementation() const override;
+	UE_API virtual USceneComponent* GetCombatForwardReference_Implementation() const override;
+	UE_API virtual USkeletalMeshComponent* GetCombatMesh_Implementation() const override;
+	UE_API virtual UAnimInstance* GetCombatAnimInstance_Implementation() const override;
+	// -- End CombatSystem implementation
 
 protected:
 
@@ -209,6 +221,13 @@ private:
 	UPROPERTY()
 	FOnLyraTeamIndexChangedDelegate OnTeamChangedDelegate;
 
+	/** Combat Manager component. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UNinjaCombatManagerComponent> CombatManager;
+
+	/** Forward Reference (Input and Combat integration). */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UArrowComponent> ForwardReference;
 protected:
 	// Called to determine what happens to the team ID when possession ends
 	virtual FGenericTeamId DetermineNewTeamAfterPossessionEnds(FGenericTeamId OldTeamID) const

@@ -51,10 +51,11 @@ void ULyraAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AAc
 		// Notify all abilities that a new pawn avatar has been set
 		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
 		{
-PRAGMA_DISABLE_DEPRECATION_WARNINGS
-			ensureMsgf(AbilitySpec.Ability && AbilitySpec.Ability->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced, TEXT("InitAbilityActorInfo: All Abilities should be Instanced (NonInstanced is being deprecated due to usability issues)."));
-PRAGMA_ENABLE_DEPRECATION_WARNINGS
-	
+			PRAGMA_DISABLE_DEPRECATION_WARNINGS
+			ensureMsgf(AbilitySpec.Ability && AbilitySpec.Ability->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced,
+			           TEXT("InitAbilityActorInfo: All Abilities should be Instanced (NonInstanced is being deprecated due to usability issues)."));
+			PRAGMA_ENABLE_DEPRECATION_WARNINGS
+
 			TArray<UGameplayAbility*> Instances = AbilitySpec.GetAbilityInstances();
 			for (UGameplayAbility* AbilityInstance : Instances)
 			{
@@ -107,14 +108,16 @@ void ULyraAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc
 		ULyraGameplayAbility* LyraAbilityCDO = Cast<ULyraGameplayAbility>(AbilitySpec.Ability);
 		if (!LyraAbilityCDO)
 		{
-			UE_LOG(LogLyraAbilitySystem, Error, TEXT("CancelAbilitiesByFunc: Non-LyraGameplayAbility %s was Granted to ASC. Skipping."), *AbilitySpec.Ability.GetName());
+			UE_LOG(LogLyraAbilitySystem, Error, TEXT("CancelAbilitiesByFunc: Non-LyraGameplayAbility %s was Granted to ASC. Skipping."),
+			       *AbilitySpec.Ability.GetName());
 			continue;
 		}
 
-PRAGMA_DISABLE_DEPRECATION_WARNINGS
-		ensureMsgf(AbilitySpec.Ability->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced, TEXT("CancelAbilitiesByFunc: All Abilities should be Instanced (NonInstanced is being deprecated due to usability issues)."));
-PRAGMA_ENABLE_DEPRECATION_WARNINGS
-			
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+		ensureMsgf(AbilitySpec.Ability->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced,
+		           TEXT("CancelAbilitiesByFunc: All Abilities should be Instanced (NonInstanced is being deprecated due to usability issues)."));
+		PRAGMA_ENABLE_DEPRECATION_WARNINGS
+
 		// Cancel all the spawned instances.
 		TArray<UGameplayAbility*> Instances = AbilitySpec.GetAbilityInstances();
 		for (UGameplayAbility* AbilityInstance : Instances)
@@ -125,11 +128,13 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
 			{
 				if (LyraAbilityInstance->CanBeCanceled())
 				{
-					LyraAbilityInstance->CancelAbility(AbilitySpec.Handle, AbilityActorInfo.Get(), LyraAbilityInstance->GetCurrentActivationInfo(), bReplicateCancelAbility);
+					LyraAbilityInstance->CancelAbility(AbilitySpec.Handle, AbilityActorInfo.Get(), LyraAbilityInstance->GetCurrentActivationInfo(),
+					                                   bReplicateCancelAbility);
 				}
 				else
 				{
-					UE_LOG(LogLyraAbilitySystem, Error, TEXT("CancelAbilitiesByFunc: Can't cancel ability [%s] because CanBeCanceled is false."), *LyraAbilityInstance->GetName());
+					UE_LOG(LogLyraAbilitySystem, Error, TEXT("CancelAbilitiesByFunc: Can't cancel ability [%s] because CanBeCanceled is false."),
+					       *LyraAbilityInstance->GetName());
 				}
 			}
 		}
@@ -155,10 +160,10 @@ void ULyraAbilitySystemComponent::AbilitySpecInputPressed(FGameplayAbilitySpec& 
 	// Use replicated events instead so that the WaitInputPress ability task works.
 	if (Spec.IsActive())
 	{
-PRAGMA_DISABLE_DEPRECATION_WARNINGS
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
 		const UGameplayAbility* Instance = Spec.GetPrimaryInstance();
-		FPredictionKey OriginalPredictionKey = Instance ? Instance->GetCurrentActivationInfo().GetActivationPredictionKey() : Spec.ActivationInfo.GetActivationPredictionKey();
-PRAGMA_ENABLE_DEPRECATION_WARNINGS
+		const FPredictionKey OriginalPredictionKey = Instance->GetCurrentActivationInfo().GetActivationPredictionKey();
+		PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 		// Invoke the InputPressed event. This is not replicated here. If someone is listening, they may replicate the InputPressed event to the server.
 		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, Spec.Handle, OriginalPredictionKey);
@@ -173,10 +178,10 @@ void ULyraAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbilitySpec&
 	// Use replicated events instead so that the WaitInputRelease ability task works.
 	if (Spec.IsActive())
 	{
-PRAGMA_DISABLE_DEPRECATION_WARNINGS
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
 		const UGameplayAbility* Instance = Spec.GetPrimaryInstance();
-		FPredictionKey OriginalPredictionKey = Instance ? Instance->GetCurrentActivationInfo().GetActivationPredictionKey() : Spec.ActivationInfo.GetActivationPredictionKey();
-PRAGMA_ENABLE_DEPRECATION_WARNINGS
+		const FPredictionKey OriginalPredictionKey = Instance->GetCurrentActivationInfo().GetActivationPredictionKey();
+		PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 		// Invoke the InputReleased event. This is not replicated here. If someone is listening, they may replicate the InputReleased event to the server.
 		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, Spec.Handle, OriginalPredictionKey);
@@ -327,7 +332,8 @@ void ULyraAbilitySystemComponent::NotifyAbilityActivated(const FGameplayAbilityS
 	}
 }
 
-void ULyraAbilitySystemComponent::NotifyAbilityFailed(const FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, const FGameplayTagContainer& FailureReason)
+void ULyraAbilitySystemComponent::NotifyAbilityFailed(const FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability,
+                                                      const FGameplayTagContainer& FailureReason)
 {
 	Super::NotifyAbilityFailed(Handle, Ability, FailureReason);
 
@@ -353,7 +359,9 @@ void ULyraAbilitySystemComponent::NotifyAbilityEnded(FGameplayAbilitySpecHandle 
 	}
 }
 
-void ULyraAbilitySystemComponent::ApplyAbilityBlockAndCancelTags(const FGameplayTagContainer& AbilityTags, UGameplayAbility* RequestingAbility, bool bEnableBlockTags, const FGameplayTagContainer& BlockTags, bool bExecuteCancelTags, const FGameplayTagContainer& CancelTags)
+void ULyraAbilitySystemComponent::ApplyAbilityBlockAndCancelTags(const FGameplayTagContainer& AbilityTags, UGameplayAbility* RequestingAbility,
+                                                                 bool bEnableBlockTags, const FGameplayTagContainer& BlockTags, bool bExecuteCancelTags,
+                                                                 const FGameplayTagContainer& CancelTags)
 {
 	FGameplayTagContainer ModifiedBlockTags = BlockTags;
 	FGameplayTagContainer ModifiedCancelTags = CancelTags;
@@ -369,14 +377,16 @@ void ULyraAbilitySystemComponent::ApplyAbilityBlockAndCancelTags(const FGameplay
 	//@TODO: Apply any special logic like blocking input or movement
 }
 
-void ULyraAbilitySystemComponent::HandleChangeAbilityCanBeCanceled(const FGameplayTagContainer& AbilityTags, UGameplayAbility* RequestingAbility, bool bCanBeCanceled)
+void ULyraAbilitySystemComponent::HandleChangeAbilityCanBeCanceled(const FGameplayTagContainer& AbilityTags, UGameplayAbility* RequestingAbility,
+                                                                   bool bCanBeCanceled)
 {
 	Super::HandleChangeAbilityCanBeCanceled(AbilityTags, RequestingAbility, bCanBeCanceled);
 
 	//@TODO: Apply any special logic like blocking input or movement
 }
 
-void ULyraAbilitySystemComponent::GetAdditionalActivationTagRequirements(const FGameplayTagContainer& AbilityTags, FGameplayTagContainer& OutActivationRequired, FGameplayTagContainer& OutActivationBlocked) const
+void ULyraAbilitySystemComponent::GetAdditionalActivationTagRequirements(const FGameplayTagContainer& AbilityTags, FGameplayTagContainer& OutActivationRequired,
+                                                                         FGameplayTagContainer& OutActivationBlocked) const
 {
 	if (TagRelationshipMapping)
 	{
@@ -401,7 +411,7 @@ void ULyraAbilitySystemComponent::HandleAbilityFailed(const UGameplayAbility* Ab
 	if (const ULyraGameplayAbility* LyraAbility = Cast<const ULyraGameplayAbility>(Ability))
 	{
 		LyraAbility->OnAbilityFailedToActivate(FailureReason);
-	}	
+	}
 }
 
 bool ULyraAbilitySystemComponent::IsActivationGroupBlocked(ELyraAbilityActivationGroup Group) const
@@ -454,7 +464,8 @@ void ULyraAbilitySystemComponent::AddAbilityToActivationGroup(ELyraAbilityActiva
 		break;
 	}
 
-	const int32 ExclusiveCount = ActivationGroupCounts[(uint8)ELyraAbilityActivationGroup::Exclusive_Replaceable] + ActivationGroupCounts[(uint8)ELyraAbilityActivationGroup::Exclusive_Blocking];
+	const int32 ExclusiveCount = ActivationGroupCounts[(uint8)ELyraAbilityActivationGroup::Exclusive_Replaceable] + ActivationGroupCounts[(uint8)
+		ELyraAbilityActivationGroup::Exclusive_Blocking];
 	if (!ensure(ExclusiveCount <= 1))
 	{
 		UE_LOG(LogLyraAbilitySystem, Error, TEXT("AddAbilityToActivationGroup: Multiple exclusive abilities are running."));
@@ -469,7 +480,8 @@ void ULyraAbilitySystemComponent::RemoveAbilityFromActivationGroup(ELyraAbilityA
 	ActivationGroupCounts[(uint8)Group]--;
 }
 
-void ULyraAbilitySystemComponent::CancelActivationGroupAbilities(ELyraAbilityActivationGroup Group, ULyraGameplayAbility* IgnoreLyraAbility, bool bReplicateCancelAbility)
+void ULyraAbilitySystemComponent::CancelActivationGroupAbilities(ELyraAbilityActivationGroup Group, ULyraGameplayAbility* IgnoreLyraAbility,
+                                                                 bool bReplicateCancelAbility)
 {
 	auto ShouldCancelFunc = [this, Group, IgnoreLyraAbility](const ULyraGameplayAbility* LyraAbility, FGameplayAbilitySpecHandle Handle)
 	{
@@ -484,7 +496,8 @@ void ULyraAbilitySystemComponent::AddDynamicTagGameplayEffect(const FGameplayTag
 	const TSubclassOf<UGameplayEffect> DynamicTagGE = ULyraAssetManager::GetSubclass(ULyraGameData::Get().DynamicTagGameplayEffect);
 	if (!DynamicTagGE)
 	{
-		UE_LOG(LogLyraAbilitySystem, Warning, TEXT("AddDynamicTagGameplayEffect: Unable to find DynamicTagGameplayEffect [%s]."), *ULyraGameData::Get().DynamicTagGameplayEffect.GetAssetName());
+		UE_LOG(LogLyraAbilitySystem, Warning, TEXT("AddDynamicTagGameplayEffect: Unable to find DynamicTagGameplayEffect [%s]."),
+		       *ULyraGameData::Get().DynamicTagGameplayEffect.GetAssetName());
 		return;
 	}
 
@@ -507,7 +520,8 @@ void ULyraAbilitySystemComponent::RemoveDynamicTagGameplayEffect(const FGameplay
 	const TSubclassOf<UGameplayEffect> DynamicTagGE = ULyraAssetManager::GetSubclass(ULyraGameData::Get().DynamicTagGameplayEffect);
 	if (!DynamicTagGE)
 	{
-		UE_LOG(LogLyraAbilitySystem, Warning, TEXT("RemoveDynamicTagGameplayEffect: Unable to find gameplay effect [%s]."), *ULyraGameData::Get().DynamicTagGameplayEffect.GetAssetName());
+		UE_LOG(LogLyraAbilitySystem, Warning, TEXT("RemoveDynamicTagGameplayEffect: Unable to find gameplay effect [%s]."),
+		       *ULyraGameData::Get().DynamicTagGameplayEffect.GetAssetName());
 		return;
 	}
 
@@ -517,12 +531,13 @@ void ULyraAbilitySystemComponent::RemoveDynamicTagGameplayEffect(const FGameplay
 	RemoveActiveEffects(Query);
 }
 
-void ULyraAbilitySystemComponent::GetAbilityTargetData(const FGameplayAbilitySpecHandle AbilityHandle, FGameplayAbilityActivationInfo ActivationInfo, FGameplayAbilityTargetDataHandle& OutTargetDataHandle)
+void ULyraAbilitySystemComponent::GetAbilityTargetData(const FGameplayAbilitySpecHandle AbilityHandle, FGameplayAbilityActivationInfo ActivationInfo,
+                                                       FGameplayAbilityTargetDataHandle& OutTargetDataHandle)
 {
-	TSharedPtr<FAbilityReplicatedDataCache> ReplicatedData = AbilityTargetDataMap.Find(FGameplayAbilitySpecHandleAndPredictionKey(AbilityHandle, ActivationInfo.GetActivationPredictionKey()));
+	TSharedPtr<FAbilityReplicatedDataCache> ReplicatedData = AbilityTargetDataMap.Find(
+		FGameplayAbilitySpecHandleAndPredictionKey(AbilityHandle, ActivationInfo.GetActivationPredictionKey()));
 	if (ReplicatedData.IsValid())
 	{
 		OutTargetDataHandle = ReplicatedData->TargetData;
 	}
 }
-
