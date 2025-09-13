@@ -18,7 +18,15 @@ class UObject;
 //////////////////////////////////////////////////////////////////////////
 // ULyraSettingsListEntrySetting_KeyboardInput
 //////////////////////////////////////////////////////////////////////////
-
+/**
+ * @class ULyraSettingsListEntrySetting_KeyboardInput
+ * @brief A class that provides functionality for handling keyboard input settings in a list entry.
+ *
+ * This class is designed to manage and represent a keyboard input setting within a settings list. It enables
+ * the user to configure and interact with keyboard inputs, such as key bindings, through a structured UI element.
+ * The class integrates into a larger settings management system, facilitating the customization of keyboard controls
+ * for applications or games.
+ */
 UCLASS(Abstract, Blueprintable, meta = (Category = "Settings", DisableNativeTick))
 class ULyraSettingsListEntrySetting_KeyboardInput : public UGameSettingListEntry_Setting
 {
@@ -67,12 +75,6 @@ private:	// Bound Widgets
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, BlueprintProtected = true, AllowPrivateAccess = true))
 	TObjectPtr<UKeyRemapButtonBase> Button_SecondaryKey;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, BlueprintProtected = true, AllowPrivateAccess = true))
-	TObjectPtr<UKeyRemapButtonBase> Button_ThirdKey;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, BlueprintProtected = true, AllowPrivateAccess = true))
-	TObjectPtr<UKeyRemapButtonBase> Button_FourthKey;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, BlueprintProtected = true, AllowPrivateAccess = true))
 	TObjectPtr<ULyraButtonBase> Button_Clear;

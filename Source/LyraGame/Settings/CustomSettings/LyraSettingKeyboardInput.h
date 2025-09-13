@@ -54,7 +54,7 @@ protected:
 	/** ULyraSetting */
 	virtual void OnInitialized() override;
 
-
+	// distinguish which input key type we want
 	ECommonInputType CachedDesiredInputKeyType;
 
 	/** The name of this action's mappings */

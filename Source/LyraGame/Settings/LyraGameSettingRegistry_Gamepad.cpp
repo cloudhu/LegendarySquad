@@ -279,7 +279,7 @@ UGameSettingCollection* ULyraGameSettingRegistry::InitializeGamepadSettings(ULyr
 		static TSet<FName> CreatedMappingNames;
 		CreatedMappingNames.Reset();
 
-		// We only want keyboard keys on this settings screen, so we will filter down by mappings
+		// We only want gamepad keys on this settings screen, so we will filter down by mappings
 		// that are set to keyboard keys
 		FPlayerMappableKeyQueryOptions Options = {};
 		Options.KeyToMatch = EKeys::Gamepad_FaceButton_Bottom;

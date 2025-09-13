@@ -31,12 +31,8 @@ void ULyraSettingsListEntrySetting_KeyboardInput::NativeOnInitialized()
 	Super::NativeOnInitialized();
 	Button_PrimaryKey->OnKeyRemapClicked.AddUObject(this, &ThisClass::HandleRemapKeyClicked);
 	Button_SecondaryKey->OnKeyRemapClicked.AddUObject(this, &ThisClass::HandleRemapKeyClicked);
-	Button_ThirdKey->OnKeyRemapClicked.AddUObject(this, &ThisClass::HandleRemapKeyClicked);
-	Button_FourthKey->OnKeyRemapClicked.AddUObject(this, &ThisClass::HandleRemapKeyClicked);
 	ButtonArray.Add(Button_PrimaryKey);
 	ButtonArray.Add(Button_SecondaryKey);
-	ButtonArray.Add(Button_ThirdKey);
-	ButtonArray.Add(Button_FourthKey);
 	Button_Clear->OnClicked().AddUObject(this, &ThisClass::HandleClearClicked);
 	Button_ResetToDefault->OnClicked().AddUObject(this, &ThisClass::HandleResetToDefaultClicked);
 }
@@ -88,8 +84,16 @@ void ULyraSettingsListEntrySetting_KeyboardInput::HandleKeySelectionCanceled(UKe
 
 void ULyraSettingsListEntrySetting_KeyboardInput::HandleClearClicked() const
 {
-	KeyboardInputSetting->ChangeBinding(0, EKeys::Invalid);
-	KeyboardInputSetting->ChangeBinding(1, EKeys::Invalid);
+	if (KeyboardInputSetting->GetDesiredInputKeyType()==ECommonInputType::MouseAndKeyboard)
+	{
+		KeyboardInputSetting->ChangeBinding(0, EKeys::Invalid);
+		KeyboardInputSetting->ChangeBinding(1, EKeys::Invalid);
+	}
+	else
+	{
+		KeyboardInputSetting->ChangeBinding(2, EKeys::Invalid);
+		KeyboardInputSetting->ChangeBinding(3, EKeys::Invalid);
+	}
 }
 
 void ULyraSettingsListEntrySetting_KeyboardInput::HandleResetToDefaultClicked() const
@@ -131,8 +135,6 @@ void ULyraSettingsListEntrySetting_KeyboardInput::Refresh() const
 		const FText NotBound = LOCTEXT("NotBound", "Not Bound");
 		Button_PrimaryKey->SetButtonText(NotBound);
 		Button_SecondaryKey->SetButtonText(NotBound);
-		Button_ThirdKey->SetVisibility(ESlateVisibility::Collapsed);
-		Button_FourthKey->SetVisibility(ESlateVisibility::Collapsed);
 		int Index = 0;
 		FSlateBrush FoundBrush;
 		int PrevIndex = 0;

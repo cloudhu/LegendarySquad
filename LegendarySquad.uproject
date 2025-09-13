@@ -400,6 +400,11 @@
 			"Name": "NinjaCombat",
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/Fab/product/fd2c3e96-f352-4dc2-80fa-ad63f12c1cee"
+		},
+		{
+			"Name": "BlueprintAssist",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/9e895371fa3a471c87337860d6f341ff"
 		}
 	],
 	"EpicSampleNameHash": "451731683"
